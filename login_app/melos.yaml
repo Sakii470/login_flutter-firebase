@@ -1,0 +1,30 @@
+# melos.yaml
+# THIS IS THE CORRECTED VERSION
+
+name: login_app
+
+packages:
+  - . # Includes the root app itself
+  - packages/** # Includes all packages inside the 'packages' directory
+
+scripts:
+  build:
+    # This 'exec' key is the special Melos command.
+    # It tells Melos: "run the following command in the filtered packages"
+    exec: flutter pub run build_runner build --delete-conflicting-outputs
+    
+    # This 'packageFilters' block tells Melos WHERE to run the command.
+    # It replaces the need for --depends-on on the command line.
+    packageFilters:
+      dependsOn:
+        - build_runner
+
+  watch:
+    exec: flutter pub run build_runner watch --delete-conflicting-outputs
+    packageFilters:
+      dependsOn:
+        - build_runner
+        
+  test:
+    exec: flutter test
+    
