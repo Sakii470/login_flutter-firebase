@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:login_app/blocs/authentication_cubit/cubit/authentication_cubit.dart';
-import 'package:login_app/blocs/sign_in_cubit/cubit/sign_in_cubit.dart';
-import 'package:login_app/blocs/sign_up_cubit/cubit/sign_up_cubit.dart';
-import 'package:login_app/screens/sign_in/sign_in_screen.dart';
-import 'package:login_app/screens/sign_up/sign_up_screen.dart';
+import 'package:login_app/screens/sign_in/cubit/sign_in_cubit.dart';
+import 'package:login_app/screens/sign_up/cubit/sign_up_cubit.dart';
+import 'package:login_app/screens/sign_in/presentation/sign_in_screen.dart';
+import 'package:login_app/screens/sign_up/presentation/sign_up_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
