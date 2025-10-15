@@ -17,14 +17,6 @@ dependencies:
   firebase_storage: ^13.0.3
   firebase_core: ^4.2.0
 
-  # For code generation
-  build_runner: ^2.9.0
-  freezed: ^3.2.3
-  json_serializable: ^6.11.1
-
-   # Add these for Freezed
-  freezed_annotation: ^3.1.0
-  json_annotation: ^4.9.0
   
 
 dev_dependencies:

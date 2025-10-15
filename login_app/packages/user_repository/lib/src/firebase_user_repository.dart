@@ -5,8 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:user_repository/src/models/my_user.dart';
-import 'entities/entities.dart';
-import 'user_repo.dart';
+import 'package:user_repository/user_repository.dart';
 
 class FirebaseUserRepository implements UserRepository {
   FirebaseUserRepository({
@@ -75,7 +74,7 @@ class FirebaseUserRepository implements UserRepository {
   @override
   Future<void> setUserData(MyUser user) async {
     try {
-      await usersCollection.doc(user.id).set(user.toEntity().toJson());
+      await usersCollection.doc(user.id).set(user.toEntity().toDocument());
     } catch (e) {
       log(e.toString());
       rethrow;
@@ -88,7 +87,7 @@ class FirebaseUserRepository implements UserRepository {
       return usersCollection
           .doc(myUserId)
           .get()
-          .then((value) => MyUser.fromEntity(MyUserEntity.fromJson(value.data()!)));
+          .then((value) => MyUser.fromEntity(MyUserEntity.fromDocument(value.data()!)));
     } catch (e) {
       log(e.toString());
       rethrow;

@@ -1,41 +1,50 @@
-// my_user.dart
+import 'package:equatable/equatable.dart';
 
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:user_repository/user_repository.dart';
-//import 'entities.dart';
+import '../entities/entities.dart';
 
-part 'my_user.freezed.dart';
+class MyUser extends Equatable {
+	final String id;
+	final String email;
+	final String name;
+	String? picture;
 
-@freezed
-class MyUser with _$MyUser {
-  // private constructor is needed by freezed
-  const MyUser._();
+	MyUser({
+		required this.id,
+		required this.email,
+		required this.name,
+		this.picture,
+	});
 
-  const factory MyUser({
-    required String id,
-    required String email,
-    required String name,
-    String? picture,
-  }) = _MyUser;
-
-  /// Empty user which represents an unauthenticated user.
+	/// Empty user which represents an unauthenticated user.
   static final empty = MyUser(
-    id: '',
-    email: '',
-    name: '',
-    picture: '',
-  );
+		id: '', 
+		email: '',
+		name: '', 
+		picture: ''
+	);
 
-  /// Convenience getter to determine whether the current user is empty.
+	/// Modify MyUser parameters
+	MyUser copyWith({
+    String? id,
+    String? email,
+    String? name,
+    String? picture,
+  }) {
+    return MyUser(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      name: name ?? this.name,
+      picture: picture ?? this.picture,
+    );
+  }
+
+	/// Convenience getter to determine whether the current user is empty.
   bool get isEmpty => this == MyUser.empty;
 
   /// Convenience getter to determine whether the current user is not empty.
   bool get isNotEmpty => this != MyUser.empty;
 
-  // --- MAPPING LOGIC STAYS ---
-  // The logic to map between layers is still your responsibility
-
-  MyUserEntity toEntity() {
+	MyUserEntity toEntity() {
     return MyUserEntity(
       id: id,
       email: email,
@@ -44,7 +53,7 @@ class MyUser with _$MyUser {
     );
   }
 
-  static MyUser fromEntity(MyUserEntity entity) {
+	static MyUser fromEntity(MyUserEntity entity) {
     return MyUser(
       id: entity.id,
       email: entity.email,
@@ -52,4 +61,9 @@ class MyUser with _$MyUser {
       picture: entity.picture,
     );
   }
+
+
+	@override
+	List<Object?> get props => [id, email, name, picture];
+	
 }

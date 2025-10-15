@@ -8,6 +8,10 @@ packages:
   - packages/** # Includes all packages inside the 'packages' directory
 
 scripts:
+
+  get:  
+    exec: flutter pub get
+
   build:
     # This 'exec' key is the special Melos command.
     # It tells Melos: "run the following command in the filtered packages"
