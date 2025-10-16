@@ -31,6 +31,14 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     }
   }
 
+  /// Triggers the sign-out process.
+  Future<void> signOut() async {
+    // This simply calls the repository.
+    // The app's root AuthenticationBloc will listen to the user stream
+    // from the repository and handle the navigation.
+    await userRepository.logOut();
+  }
+
   // It's crucial to cancel the stream subscription when the Cubit is closed
   // to prevent memory leaks.
   @override

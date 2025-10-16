@@ -1,28 +1,37 @@
+// lib/routing/app_router.dart
+
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:login_app/blocs/authentication_cubit/cubit/authentication_cubit.dart';
-import 'package:login_app/blocs/my_user_cubit/cubit/my_user_cubit.dart';
-import 'package:login_app/screens/sign_in/cubit/sign_in_cubit.dart';
-import 'package:login_app/screens/welcome/presentation/welcome_screen.dart';
 import 'package:login_app/screens/home/presentation/home_screen.dart';
+import 'package:login_app/screens/welcome/presentation/welcome_screen.dart';
 import 'package:login_app/routing/home_shell.dart';
+import 'dart:async';
 
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+// Use a root navigator key for more advanced navigation scenarios like showing dialogs over the shell
+final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
+
+// A list of public routes that don't require authentication.
+const _publicRoutes = ['/'];
 
 class GoRouterRefreshStream extends ChangeNotifier {
-  late final Stream _stream;
+  late final StreamSubscription _subscription;
 
   GoRouterRefreshStream(Stream stream) {
-    _stream = stream;
-    _stream.listen((_) => notifyListeners());
+    _subscription = stream.listen((_) => notifyListeners());
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
   }
 }
 
 class AppRouter {
   static GoRouter createGoRouter(AuthenticationCubit authCubit) {
     return GoRouter(
-      navigatorKey: navigatorKey,
+      navigatorKey: _rootNavigatorKey,
       initialLocation: '/',
       refreshListenable: GoRouterRefreshStream(authCubit.stream),
       redirect: (BuildContext context, GoRouterState state) {
@@ -30,12 +39,12 @@ class AppRouter {
         final loggedIn = status == AuthenticationStatus.authenticated;
         final location = state.uri.toString();
 
-        // If not logged in and trying to access protected routes, redirect to welcome
-        if (!loggedIn && location.startsWith('/home')) {
+        final isGoingToProtectedRoute = !_publicRoutes.contains(location);
+
+        if (!loggedIn && isGoingToProtectedRoute) {
           return '/';
         }
 
-        // If logged in and on welcome page, redirect to home
         if (loggedIn && location == '/') {
           return '/home';
         }
@@ -43,58 +52,45 @@ class AppRouter {
         return null;
       },
       routes: [
-        // Welcome/Login route
+        // Welcome/Login route (outside the shell)
         GoRoute(
           path: '/',
           name: 'welcome',
           builder: (context, state) => const WelcomeScreen(),
         ),
 
-        // Home Shell with bottom navigation
-        ShellRoute(
-          builder: (context, state, child) {
-            final location = state.uri.toString();
-            final segments = location.split('/');
-            final showBottomNav = segments.length <= 3;
-            final loggedIn = authCubit.state.status == AuthenticationStatus.authenticated;
-
-            return HomeShell(
-              child: child,
-              location: location,
-              showBottomNav: showBottomNav,
-              loggedIn: loggedIn,
-            );
+        // CORRECTED: Use StatefulShellRoute for tabbed navigation
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, navigationShell) {
+            // The builder now provides a `navigationShell` object.
+            // Pass this object to your HomeShell.
+            return HomeShell(navigationShell: navigationShell);
           },
-          routes: [
-            GoRoute(
-              path: '/home',
-              name: 'home',
-              builder: (context, state) => MultiBlocProvider(
-                providers: [
-                  BlocProvider(
-                    create: (context) => SignInCubit(
-                      userRepository: context.read<AuthenticationCubit>().userRepository,
+          branches: [
+            // Branch 1: The "Home" tab
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/home',
+                  name: 'home',
+                  builder: (context, state) => const HomeScreen(),
+                ),
+              ],
+            ),
+
+            // Branch 2: The "Profile" tab
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/home/profile',
+                  name: 'profile',
+                  builder: (context, state) => const Scaffold(
+                    body: Center(
+                      child: Text('Profile Page - Coming Soon'),
                     ),
                   ),
-                  BlocProvider(
-                    create: (context) => MyUserCubit(
-                      myUserRepository: context.read<AuthenticationCubit>().userRepository,
-                    )..getMyUser(
-                        context.read<AuthenticationCubit>().state.user!.uid,
-                      ),
-                  ),
-                ],
-                child: const HomeScreen(),
-              ),
-            ),
-            GoRoute(
-              path: '/home/profile',
-              name: 'profile',
-              builder: (context, state) => const Scaffold(
-                body: Center(
-                  child: Text('Profile Page - Coming Soon'),
                 ),
-              ),
+              ],
             ),
           ],
         ),
