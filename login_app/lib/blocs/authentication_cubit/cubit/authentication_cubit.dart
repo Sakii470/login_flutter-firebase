@@ -3,19 +3,21 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:user_repository/user_repository.dart';
+import 'package:login_app/blocs/my_user_cubit/cubit/my_user_cubit.dart';
+// NO LONGER NEEDED: import 'package:login_app/locator.dart';
 
 part 'authentication_state.dart';
 
 class AuthenticationCubit extends Cubit<AuthenticationState> {
-  final UserRepository userRepository;
+  final UserRepository _userRepository;
+  final MyUserCubit _myUserCubit; // add dependency
   late final StreamSubscription<User?> _userSubscription;
 
-  AuthenticationCubit({required UserRepository myUserRepository})
-      : userRepository = myUserRepository,
+  AuthenticationCubit({required UserRepository userRepository, required MyUserCubit myUserCubit})
+      : _userRepository = userRepository,
+        _myUserCubit = myUserCubit,
         super(const AuthenticationState.unknown()) {
-    // Listen to the user stream from the repository.
-    // Instead of adding an event, we directly process the user object.
-    _userSubscription = userRepository.user.listen((user) {
+    _userSubscription = _userRepository.user.listen((user) {
       _onUserChanged(user);
     });
   }
@@ -23,24 +25,21 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   /// A private method to handle user changes from the stream.
   void _onUserChanged(User? user) {
     if (user != null) {
-      // If the user exists, emit an authenticated state.
       emit(AuthenticationState.authenticated(user));
     } else {
-      // If the user is null, emit an unauthenticated state.
+      // clear MyUser state when unauthenticated
+      _myUserCubit.clearUser();
       emit(const AuthenticationState.unauthenticated());
     }
   }
 
   /// Triggers the sign-out process.
   Future<void> signOut() async {
-    // This simply calls the repository.
-    // The app's root AuthenticationBloc will listen to the user stream
-    // from the repository and handle the navigation.
-    await userRepository.logOut();
+    await _userRepository.logOut();
+    // proactively clear MyUser state on manual sign-out
+    _myUserCubit.clearUser();
   }
 
-  // It's crucial to cancel the stream subscription when the Cubit is closed
-  // to prevent memory leaks.
   @override
   Future<void> close() {
     _userSubscription.cancel();

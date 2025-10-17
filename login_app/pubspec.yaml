@@ -28,6 +28,9 @@ dependencies:
   #Routing
   go_router: ^16.2.4
 
+  #Get_it
+  get_it: ^8.2.0
+
 flutter:
   uses-material-design: true
   assets:

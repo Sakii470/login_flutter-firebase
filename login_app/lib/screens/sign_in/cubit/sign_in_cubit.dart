@@ -6,8 +6,10 @@ import 'package:user_repository/user_repository.dart';
 part 'sign_in_state.dart';
 
 class SignInCubit extends Cubit<SignInState> {
+  // The dependency is declared here.
   final UserRepository _userRepository;
 
+  // The dependency is "injected" via the constructor.
   SignInCubit({required UserRepository userRepository})
       : _userRepository = userRepository,
         super(const SignInState());
@@ -31,29 +33,18 @@ class SignInCubit extends Cubit<SignInState> {
 
   /// Triggers the sign-in process with email and password from the state.
   Future<void> signInWithCredentials() async {
-    // Only proceed if the form is valid.
     if (!state.isValid) return;
 
-    // Emit a loading state
     emit(state.copyWith(status: SignInStatus.loading, errorMessage: null));
     try {
       await _userRepository.signIn(state.email, state.password);
-      // On success, emit the success state.
       emit(state.copyWith(status: SignInStatus.success));
     } catch (e) {
       log(e.toString());
-      // On failure, emit failure state with a message.
       emit(state.copyWith(
         status: SignInStatus.failure,
         errorMessage: 'Invalid email or password. Please try again.',
       ));
     }
-  }
-
-  /// Triggers the sign-out process.
-  Future<void> signOut() async {
-    // Note: This method doesn't emit a state. The AuthenticationCubit/Bloc
-    // should be listening to the user stream and will react to the logout.
-    await _userRepository.logOut();
   }
 }

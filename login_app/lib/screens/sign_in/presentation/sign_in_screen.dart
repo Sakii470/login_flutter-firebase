@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:login_app/constants/app_colors.dart';
 import 'package:login_app/screens/sign_in/cubit/sign_in_cubit.dart';
 
 import '../../../components/textfield.dart';
@@ -17,6 +18,16 @@ class _SignInScreenState extends State<SignInScreen> {
   bool obscurePassword = true;
   IconData iconPassword = CupertinoIcons.eye_fill;
   final _formKey = GlobalKey<FormState>();
+  // Add controllers to avoid updating state on every keystroke
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +40,13 @@ class _SignInScreenState extends State<SignInScreen> {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
-              SnackBar(content: Text(state.errorMessage!)),
+              SnackBar(
+                backgroundColor: Theme.of(context).colorScheme.error,
+                content: Text(
+                  state.errorMessage!,
+                  style: const TextStyle(color: AppColors.white),
+                ),
+              ),
             );
         }
       },
@@ -38,7 +55,7 @@ class _SignInScreenState extends State<SignInScreen> {
         child: Column(
           children: [
             const SizedBox(height: 20),
-            _EmailInputField(screenWidth: screenWidth),
+            _EmailInputField(screenWidth: screenWidth, controller: _emailController),
             const SizedBox(height: 10),
             _PasswordInputField(
               screenWidth: screenWidth,
@@ -50,6 +67,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   iconPassword = obscurePassword ? CupertinoIcons.eye_fill : CupertinoIcons.eye_slash_fill;
                 });
               },
+              controller: _passwordController,
             ),
             _ErrorMessage(),
             const SizedBox(height: 20),
@@ -61,25 +79,34 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 }
 
+// All the private helper widgets (_EmailInputField, etc.) remain unchanged.
+// ...existing code...
+
 class _EmailInputField extends StatelessWidget {
   final double screenWidth;
+  final TextEditingController controller;
 
-  const _EmailInputField({required this.screenWidth});
+  const _EmailInputField({required this.screenWidth, required this.controller});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: screenWidth * 0.9,
-      child: MyTextField(
-        // controller can be omitted if you fully rely on Cubit state
-        hintText: 'Email',
-        obscureText: false,
-        keyboardType: TextInputType.emailAddress,
-        prefixIcon: const Icon(CupertinoIcons.mail_solid),
-        onChanged: (email) {
-          context.read<SignInCubit>().emailChanged(email!);
+      child: Focus(
+        onFocusChange: (hasFocus) {
+          if (!hasFocus) {
+            context.read<SignInCubit>().emailChanged(controller.text);
+          }
         },
-        validator: (val) => null, // No validation
+        child: MyTextField(
+          // controller used to read text when focus is lost
+          hintText: 'Email',
+          obscureText: false,
+          keyboardType: TextInputType.emailAddress,
+          prefixIcon: const Icon(CupertinoIcons.mail_solid),
+          controller: controller,
+          validator: (val) => null, // No validation
+        ),
       ),
     );
   }
@@ -90,30 +117,37 @@ class _PasswordInputField extends StatelessWidget {
   final bool obscureText;
   final IconData icon;
   final VoidCallback onSuffixIconPressed;
+  final TextEditingController controller;
 
   const _PasswordInputField({
     required this.screenWidth,
     required this.obscureText,
     required this.icon,
     required this.onSuffixIconPressed,
+    required this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: screenWidth * 0.9,
-      child: MyTextField(
-        hintText: 'Password',
-        obscureText: obscureText,
-        keyboardType: TextInputType.visiblePassword,
-        prefixIcon: const Icon(CupertinoIcons.lock_fill),
-        onChanged: (password) {
-          context.read<SignInCubit>().passwordChanged(password!);
+      child: Focus(
+        onFocusChange: (hasFocus) {
+          if (!hasFocus) {
+            context.read<SignInCubit>().passwordChanged(controller.text);
+          }
         },
-        validator: (val) => null, // No validation
-        suffixIcon: IconButton(
-          onPressed: onSuffixIconPressed,
-          icon: Icon(icon),
+        child: MyTextField(
+          hintText: 'Password',
+          obscureText: obscureText,
+          keyboardType: TextInputType.visiblePassword,
+          prefixIcon: const Icon(CupertinoIcons.lock_fill),
+          controller: controller,
+          validator: (val) => null, // No validation
+          suffixIcon: IconButton(
+            onPressed: onSuffixIconPressed,
+            icon: Icon(icon),
+          ),
         ),
       ),
     );
@@ -157,6 +191,8 @@ class _SignInButton extends StatelessWidget {
                 child: TextButton(
                   // Button is disabled if the form is invalid
                   onPressed: () {
+                    // Ensure fields commit their values by unfocusing
+                    FocusScope.of(context).unfocus();
                     // Use formKey to show validation errors on fields
                     final form = Form.of(context);
                     if (form.validate()) {

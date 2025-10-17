@@ -37,6 +37,3 @@ class SignUpState extends Equatable {
   @override
   List<Object> get props => [email, password, name, status];
 }
-
-// NOTE: Your old states like SignUpInitial, SignUpProcess, etc., are no longer needed.
-// The `SubmissionStatus` enum handles this now. You can delete them.

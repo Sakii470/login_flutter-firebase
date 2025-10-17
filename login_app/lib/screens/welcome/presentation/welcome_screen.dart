@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:login_app/blocs/authentication_cubit/cubit/authentication_cubit.dart';
+import 'package:login_app/locator.dart';
 import 'package:login_app/screens/sign_in/cubit/sign_in_cubit.dart';
 import 'package:login_app/screens/sign_up/cubit/sign_up_cubit.dart';
 import 'package:login_app/screens/sign_in/presentation/sign_in_screen.dart';
@@ -53,36 +53,29 @@ class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateM
                     tabs: const [
                       Padding(
                         padding: EdgeInsets.all(12.0),
-                        child: Text(
-                          'Sign In',
-                          style: TextStyle(
-                            fontSize: 18,
-                          ),
-                        ),
+                        child: Text('Sign In', style: TextStyle(fontSize: 18)),
                       ),
                       Padding(
                         padding: EdgeInsets.all(12.0),
-                        child: Text(
-                          'Sign Up',
-                          style: TextStyle(
-                            fontSize: 18,
-                          ),
-                        ),
+                        child: Text('Sign Up', style: TextStyle(fontSize: 18)),
                       ),
                     ]),
                 Expanded(
-                  child: TabBarView(controller: tabController, children: [
-                    BlocProvider<SignInCubit>(
-                      create: (context) =>
-                          SignInCubit(userRepository: context.read<AuthenticationCubit>().userRepository),
-                      child: const SignInScreen(),
-                    ),
-                    BlocProvider<SignUpCubit>(
-                      create: (context) =>
-                          SignUpCubit(userRepository: context.read<AuthenticationCubit>().userRepository),
-                      child: const SignUpScreen(),
-                    ),
-                  ]),
+                  child: TabBarView(
+                    controller: tabController,
+                    children: [
+                      BlocProvider<SignInCubit>(
+                        // 2. Use the locator to create the instance
+                        create: (context) => locator<SignInCubit>(),
+                        child: const SignInScreen(),
+                      ),
+                      BlocProvider<SignUpCubit>(
+                        // 3. Do the same for SignUpCubit
+                        create: (context) => locator<SignUpCubit>(),
+                        child: const SignUpScreen(),
+                      ),
+                    ],
+                  ),
                 )
               ],
             ),

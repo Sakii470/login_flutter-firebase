@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:login_app/constants/app_colors.dart';
 import 'package:login_app/screens/sign_up/cubit/sign_up_cubit.dart';
 
 import '../../../components/strings.dart';
@@ -40,7 +41,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(
-              const SnackBar(content: Text('Sign Up Failure')),
+              const SnackBar(
+                backgroundColor: AppColors.red,
+                content: Text('Sign Up Failure', style: TextStyle(color: AppColors.white)),
+              ),
             );
         }
         // Navigation would also be a side-effect handled here.
@@ -53,92 +57,95 @@ class _SignUpScreenState extends State<SignUpScreen> {
               const SizedBox(height: 20),
               SizedBox(
                 width: screenWidth * 0.9,
-                child: MyTextField(
-                  controller: emailController,
-                  hintText: 'Email',
-                  obscureText: false,
-                  keyboardType: TextInputType.emailAddress,
-                  prefixIcon: const Icon(CupertinoIcons.mail_solid),
-                  // Send changes to the cubit
-                  onChanged: (email) {
-                    if (email != null) {
-                      context.read<SignUpCubit>().emailChanged(email);
+                child: Focus(
+                  onFocusChange: (hasFocus) {
+                    if (!hasFocus) {
+                      context.read<SignUpCubit>().emailChanged(emailController.text);
                     }
-                    return null;
                   },
-                  validator: (val) {
-                    if (val!.isEmpty) {
-                      return 'Please fill in this field';
-                    } else if (!emailRexExp.hasMatch(val)) {
-                      return 'Please enter a valid email format (example@domain.com)';
-                    }
-                    return null;
-                  },
+                  child: MyTextField(
+                    controller: emailController,
+                    hintText: 'Email',
+                    obscureText: false,
+                    keyboardType: TextInputType.emailAddress,
+                    prefixIcon: const Icon(CupertinoIcons.mail_solid),
+                    // onChanged removed to avoid emitting on each keystroke
+                    validator: (val) {
+                      if (val!.isEmpty) {
+                        return 'Please fill in this field';
+                      } else if (!emailRexExp.hasMatch(val)) {
+                        return 'Please enter a valid email format (example@domain.com)';
+                      }
+                      return null;
+                    },
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
               SizedBox(
                 width: screenWidth * 0.9,
-                child: MyTextField(
-                  controller: passwordController,
-                  hintText: 'Password',
-                  obscureText: obscurePassword,
-                  keyboardType: TextInputType.visiblePassword,
-                  prefixIcon: const Icon(CupertinoIcons.lock_fill),
-                  // Send changes to the cubit
-                  onChanged: (password) {
-                    if (password != null) {
-                      context.read<SignUpCubit>().passwordChanged(password);
+                child: Focus(
+                  onFocusChange: (hasFocus) {
+                    if (!hasFocus) {
+                      context.read<SignUpCubit>().passwordChanged(passwordController.text);
                     }
-                    return null;
                   },
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      setState(() {
-                        // This setState is OK as it only controls local UI state
-                        obscurePassword = !obscurePassword;
-                        if (obscurePassword) {
-                          iconPassword = CupertinoIcons.eye_fill;
-                        } else {
-                          iconPassword = CupertinoIcons.eye_slash_fill;
-                        }
-                      });
+                  child: MyTextField(
+                    controller: passwordController,
+                    hintText: 'Password',
+                    obscureText: obscurePassword,
+                    keyboardType: TextInputType.visiblePassword,
+                    prefixIcon: const Icon(CupertinoIcons.lock_fill),
+                    // onChanged removed to avoid emitting on each keystroke
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          // This setState is OK as it only controls local UI state
+                          obscurePassword = !obscurePassword;
+                          if (obscurePassword) {
+                            iconPassword = CupertinoIcons.eye_fill;
+                          } else {
+                            iconPassword = CupertinoIcons.eye_slash_fill;
+                          }
+                        });
+                      },
+                      icon: Icon(iconPassword),
+                    ),
+                    validator: (val) {
+                      if (val!.isEmpty) {
+                        return 'Please fill in this field';
+                      }
+                      return null;
                     },
-                    icon: Icon(iconPassword),
                   ),
-                  validator: (val) {
-                    if (val!.isEmpty) {
-                      return 'Please fill in this field';
-                    }
-                    return null;
-                  },
                 ),
               ),
 
               const SizedBox(height: 10),
               SizedBox(
                 width: screenWidth * 0.9,
-                child: MyTextField(
-                  controller: nameController,
-                  hintText: 'Name',
-                  obscureText: false,
-                  keyboardType: TextInputType.name,
-                  prefixIcon: const Icon(CupertinoIcons.person_fill),
-                  // Send changes to the cubit
-                  onChanged: (name) {
-                    if (name != null) {
-                      context.read<SignUpCubit>().nameChanged(name);
+                child: Focus(
+                  onFocusChange: (hasFocus) {
+                    if (!hasFocus) {
+                      context.read<SignUpCubit>().nameChanged(nameController.text);
                     }
-                    return null;
                   },
-                  validator: (val) {
-                    if (val!.isEmpty) {
-                      return 'Please fill in this field';
-                    } else if (val.length > 30) {
-                      return 'Name too long';
-                    }
-                    return null;
-                  },
+                  child: MyTextField(
+                    controller: nameController,
+                    hintText: 'Name',
+                    obscureText: false,
+                    keyboardType: TextInputType.name,
+                    prefixIcon: const Icon(CupertinoIcons.person_fill),
+                    // onChanged removed to avoid emitting on each keystroke
+                    validator: (val) {
+                      if (val!.isEmpty) {
+                        return 'Please fill in this field';
+                      } else if (val.length > 30) {
+                        return 'Name too long';
+                      }
+                      return null;
+                    },
+                  ),
                 ),
               ),
               SizedBox(height: MediaQuery.of(context).size.height * 0.02),
@@ -152,6 +159,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           child: TextButton(
                               // Disable the button if the form is invalid
                               onPressed: () {
+                                // Ensure fields commit their values by unfocusing
+                                FocusScope.of(context).unfocus();
                                 if (_formKey.currentState!.validate()) {
                                   context.read<SignUpCubit>().signUp();
                                 }
