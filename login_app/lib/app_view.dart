@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:login_app/blocs/authentication_cubit/cubit/authentication_cubit.dart';
-import 'package:login_app/app_router.dart';
+import 'package:login_app/routing/app_router.dart';
 
 class MyAppView extends StatelessWidget {
   const MyAppView({super.key});

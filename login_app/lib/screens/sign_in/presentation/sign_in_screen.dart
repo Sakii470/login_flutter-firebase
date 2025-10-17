@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:login_app/screens/sign_in/cubit/sign_in_cubit.dart';
 
-import '../../../components/strings.dart' hide emailRexExp, passwordRexExp;
 import '../../../components/textfield.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -21,27 +20,28 @@ class _SignInScreenState extends State<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     // BlocListener is great for "one-time" actions like showing a SnackBar or navigating.
     return BlocListener<SignInCubit, SignInState>(
       listener: (context, state) {
         if (state.status == SignInStatus.failure && state.errorMessage != null) {
           // You could show a SnackBar here for a better user experience
-          // ScaffoldMessenger.of(context)
-          //   ..hideCurrentSnackBar()
-          //   ..showSnackBar(
-          //     SnackBar(content: Text(state.errorMessage!)),
-          //   );
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(content: Text(state.errorMessage!)),
+            );
         }
-        // Navigation on success would also go here.
       },
       child: Form(
         key: _formKey,
         child: Column(
           children: [
             const SizedBox(height: 20),
-            _EmailInputField(),
+            _EmailInputField(screenWidth: screenWidth),
             const SizedBox(height: 10),
             _PasswordInputField(
+              screenWidth: screenWidth,
               obscureText: obscurePassword,
               icon: iconPassword,
               onSuffixIconPressed: () {
@@ -62,10 +62,14 @@ class _SignInScreenState extends State<SignInScreen> {
 }
 
 class _EmailInputField extends StatelessWidget {
+  final double screenWidth;
+
+  const _EmailInputField({required this.screenWidth});
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.9,
+      width: screenWidth * 0.9,
       child: MyTextField(
         // controller can be omitted if you fully rely on Cubit state
         hintText: 'Email',
@@ -75,25 +79,20 @@ class _EmailInputField extends StatelessWidget {
         onChanged: (email) {
           context.read<SignInCubit>().emailChanged(email!);
         },
-        validator: (val) {
-          if (val!.isEmpty) {
-            return 'Please fill in this field';
-          } else if (!emailRexExp.hasMatch(val)) {
-            return 'Please enter a valid email';
-          }
-          return null;
-        },
+        validator: (val) => null, // No validation
       ),
     );
   }
 }
 
 class _PasswordInputField extends StatelessWidget {
+  final double screenWidth;
   final bool obscureText;
   final IconData icon;
   final VoidCallback onSuffixIconPressed;
 
   const _PasswordInputField({
+    required this.screenWidth,
     required this.obscureText,
     required this.icon,
     required this.onSuffixIconPressed,
@@ -102,7 +101,7 @@ class _PasswordInputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.9,
+      width: screenWidth * 0.9,
       child: MyTextField(
         hintText: 'Password',
         obscureText: obscureText,
@@ -111,14 +110,7 @@ class _PasswordInputField extends StatelessWidget {
         onChanged: (password) {
           context.read<SignInCubit>().passwordChanged(password!);
         },
-        validator: (val) {
-          if (val!.isEmpty) {
-            return 'Please fill in this field';
-          } else if (!passwordRexExp.hasMatch(val)) {
-            return 'Please enter a valid password';
-          }
-          return null;
-        },
+        validator: (val) => null, // No validation
         suffixIcon: IconButton(
           onPressed: onSuffixIconPressed,
           icon: Icon(icon),
@@ -164,18 +156,16 @@ class _SignInButton extends StatelessWidget {
                 height: 50,
                 child: TextButton(
                   // Button is disabled if the form is invalid
-                  onPressed: state.isValid
-                      ? () {
-                          // Use formKey to show validation errors on fields
-                          final form = Form.of(context);
-                          if (form.validate()) {
-                            context.read<SignInCubit>().signInWithCredentials();
-                          }
-                        }
-                      : null,
+                  onPressed: () {
+                    // Use formKey to show validation errors on fields
+                    final form = Form.of(context);
+                    if (form.validate()) {
+                      context.read<SignInCubit>().signInWithCredentials();
+                    }
+                  },
                   style: TextButton.styleFrom(
                     elevation: 3.0,
-                    backgroundColor: state.isValid ? Theme.of(context).colorScheme.primary : Colors.grey.shade400,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(60)),
                   ),

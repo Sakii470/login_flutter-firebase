@@ -5,10 +5,6 @@ import 'package:user_repository/user_repository.dart';
 
 part 'sign_in_state.dart';
 
-// Assuming these are defined in your components/strings.dart or similar
-final RegExp emailRexExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-final RegExp passwordRexExp = RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$');
-
 class SignInCubit extends Cubit<SignInState> {
   final UserRepository _userRepository;
 
@@ -30,7 +26,7 @@ class SignInCubit extends Cubit<SignInState> {
 
   /// Validates the form based on the current email and password.
   bool _validateForm({required String email, required String password}) {
-    return emailRexExp.hasMatch(email) && passwordRexExp.hasMatch(password);
+    return email.isNotEmpty && password.isNotEmpty;
   }
 
   /// Triggers the sign-in process with email and password from the state.

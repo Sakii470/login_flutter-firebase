@@ -32,6 +32,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     return BlocListener<SignUpCubit, SignUpState>(
       listener: (context, state) {
         // Use the listener for side-effects like showing a SnackBar.
@@ -51,7 +52,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             children: [
               const SizedBox(height: 20),
               SizedBox(
-                width: MediaQuery.of(context).size.width * 0.9,
+                width: screenWidth * 0.9,
                 child: MyTextField(
                   controller: emailController,
                   hintText: 'Email',
@@ -69,7 +70,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     if (val!.isEmpty) {
                       return 'Please fill in this field';
                     } else if (!emailRexExp.hasMatch(val)) {
-                      return 'Please enter a valid email';
+                      return 'Please enter a valid email format (example@domain.com)';
                     }
                     return null;
                   },
@@ -77,7 +78,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
               const SizedBox(height: 10),
               SizedBox(
-                width: MediaQuery.of(context).size.width * 0.9,
+                width: screenWidth * 0.9,
                 child: MyTextField(
                   controller: passwordController,
                   hintText: 'Password',
@@ -108,71 +109,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   validator: (val) {
                     if (val!.isEmpty) {
                       return 'Please fill in this field';
-                    } else if (!passwordRexExp.hasMatch(val)) {
-                      return 'Please enter a valid password';
                     }
                     return null;
                   },
                 ),
               ),
-              const SizedBox(height: 10),
-              // Use BlocBuilder to rebuild only the widgets that depend on the state
-              BlocBuilder<SignUpCubit, SignUpState>(
-                builder: (context, state) {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "⚈  1 uppercase",
-                            style: TextStyle(
-                                color: state.containsUpperCase
-                                    ? Colors.green
-                                    : Theme.of(context).colorScheme.onBackground),
-                          ),
-                          Text(
-                            "⚈  1 lowercase",
-                            style: TextStyle(
-                                color: state.containsLowerCase
-                                    ? Colors.green
-                                    : Theme.of(context).colorScheme.onBackground),
-                          ),
-                          Text(
-                            "⚈  1 number",
-                            style: TextStyle(
-                                color:
-                                    state.containsNumber ? Colors.green : Theme.of(context).colorScheme.onBackground),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "⚈  1 special character",
-                            style: TextStyle(
-                                color: state.containsSpecialChar
-                                    ? Colors.green
-                                    : Theme.of(context).colorScheme.onBackground),
-                          ),
-                          Text(
-                            "⚈  8 minimum character",
-                            style: TextStyle(
-                                color:
-                                    state.contains8Length ? Colors.green : Theme.of(context).colorScheme.onBackground),
-                          ),
-                        ],
-                      ),
-                    ],
-                  );
-                },
-              ),
+
               const SizedBox(height: 10),
               SizedBox(
-                width: MediaQuery.of(context).size.width * 0.9,
+                width: screenWidth * 0.9,
                 child: MyTextField(
                   controller: nameController,
                   hintText: 'Name',
@@ -203,21 +148,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   return state.status == SubmissionStatus.inProgress
                       ? const CircularProgressIndicator()
                       : SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.5,
+                          width: screenWidth * 0.5,
                           child: TextButton(
                               // Disable the button if the form is invalid
-                              onPressed: state.isFormValid
-                                  ? () {
-                                      if (_formKey.currentState!.validate()) {
-                                        context.read<SignUpCubit>().signUp();
-                                      }
-                                    }
-                                  : null, // Setting onPressed to null disables the button
+                              onPressed: () {
+                                if (_formKey.currentState!.validate()) {
+                                  context.read<SignUpCubit>().signUp();
+                                }
+                              },
                               style: TextButton.styleFrom(
                                   elevation: 3.0,
-                                  backgroundColor: state.isFormValid
-                                      ? Theme.of(context).colorScheme.primary
-                                      : Colors.grey, // Visual feedback for disabled state
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.primary, // Visual feedback for disabled state
                                   foregroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(60))),
                               child: const Padding(
